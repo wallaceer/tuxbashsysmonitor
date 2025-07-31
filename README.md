@@ -1,6 +1,7 @@
 # tuxbashsysmonitor
 Linux Bash System Monitor
 
+
 This script checks the system status concerning the CPU, RAM and Disk space levels.
 The usual way to usw this script is to configure a crontab job with a minute frequency; for example
 ------------------------------------------
