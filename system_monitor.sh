@@ -7,13 +7,6 @@
 servername=$(hostname -f)
 subject="Alert from $servername"
 
-#============
-#Usage limits
-#============
-cpu_limit=90
-memory_limit=90
-disk_limit=90
-
 #========
 #Get data
 #========
