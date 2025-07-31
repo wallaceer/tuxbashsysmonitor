@@ -5,13 +5,14 @@ This script checks the system status concerning the CPU, RAM and Disk space leve
 The usual way to usw this script is to configure a crontab job with a minute frequency; for example
 ------------------------------------------
     * * * * * sh /tmp/system_monitor.sh
+
 The script
 - launch a top command
 - grep date from it
 - it compares the CPU, RAM and DISK values with the corresponding value limits
 - if the current value is greater or equal the limit values the sript sends an email with the alert and a report like this
 
-- System Monitoring Report - Thu 31 Jul 2025 01:39:01 PM CEST
+System Monitoring Report - Thu 31 Jul 2025 01:39:01 PM CEST
     ------------------------------------------
       CPU Usage: 91.6%
       Memory Usage: 29.45%
