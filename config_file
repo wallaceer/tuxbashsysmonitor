@@ -10,3 +10,9 @@ FROM=""
 cpu_limit=90
 memory_limit=90
 disk_limit=90
+
+#============
+#Log
+#============
+log_file="system_monitor.log"
+log_enable=1 #1=enabled, 0=disabled
