@@ -19,10 +19,17 @@ TOP_PROCESSES=$(ps -eo pid,comm,%mem,%cpu --sort=-%cpu | head -n 16) # Top 15 pr
 #======
 #Report
 #======
-#Empty log file
-cat /dev/null > "system_monitor.log"
+#Enable/Disable log
+#If log is disabled, the log file emptied
+#and after it registers only the last transaction
+if [ $log_enable -eq 0 ]
+then
+   #Empty log file
+   cat /dev/null > $log_file
+fi
 
-OUTPUT_FILE="system_monitor.log"
+
+OUTPUT_FILE=$log_file
 {
     echo "System Monitoring Report - $(date)"
     echo "---------------------------------"
