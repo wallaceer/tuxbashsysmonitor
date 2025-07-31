@@ -1,2 +1,12 @@
+#============
+EMAIL datas
+#============
 TO=""
 FROM=""
+
+#============
+#Usage limits
+#============
+cpu_limit=90
+memory_limit=90
+disk_limit=90
