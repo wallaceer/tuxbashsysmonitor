@@ -3,9 +3,8 @@
 #====================
 #Email configurations
 #====================
+. ./config_file
 servername=$(hostname -f)
-to=""
-from=""
 subject="Alert from $servername"
 
 #============
