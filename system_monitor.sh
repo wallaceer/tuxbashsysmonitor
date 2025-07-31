@@ -3,9 +3,10 @@
 #====================
 #Email configurations
 #====================
+servername=$(hostname -f)
 to=""
 from=""
-subject="Alert from "
+subject="Alert from $servername"
 
 #============
 #Usage limits
