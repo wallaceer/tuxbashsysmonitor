@@ -3,7 +3,8 @@ Linux Bash System Monitor
 
 This script checks the system status concerning the CPU, RAM and Disk space levels.
 The usual way to usw this script is to configure a crontab job with a minute frequency; for example
-* * * * * sh /tmp/system_monitor.sh
+    ------------------------------------------
+    * * * * * sh /tmp/system_monitor.sh
 The script
 - launch a top command
 - grep date from it
