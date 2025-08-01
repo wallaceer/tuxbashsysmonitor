@@ -15,7 +15,7 @@ The script
 - it compares the CPU, RAM and DISK values with the corresponding value limits
 - if the current value is greater or equal the limit values the sript sends an email with the alert and a report like this
 
-    
+```bash    
     System Monitoring Report - Fri 01 Aug 2025 08:39:31 PM CEST
     ------------------------------------------------------------
     CPU Usage: 0%
@@ -41,7 +41,7 @@ The script
           1 root     systemd          0.2  0.0
           2 root     kthreadd         0.0  0.0
     ------------------------------------------------------------
-
+```
 
   
 It's possible to configure many parameters that I specify below:
