@@ -14,7 +14,7 @@ CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}') # Sum of user and system
 MEMORY=$(free -m | awk 'NR==2{printf "%.2f", $3*100/$2 }') # Memory usage as a percentage
 DISK=$(df -h / | awk 'NR==2 {print $5}') # Root filesystem usage as a percentage
 UPTIME=$(uptime -p) # Human-readable uptime
-TOP_PROCESSES=$(ps -eo pid,comm,%mem,%cpu --sort=-%cpu | head -n 16) # Top 15 processes
+TOP_PROCESSES=$(ps -eo pid,user,comm,%mem,%cpu --sort=-%cpu | head -n 16) # Top 15 processes
 
 #======
 #Report
