@@ -14,6 +14,7 @@ The script
 - grep date from it
 - it compares the CPU, RAM and DISK values with the corresponding value limits
 - if the current value is greater or equal the limit values the sript sends an email with the alert and a report like this
+
     
     System Monitoring Report - Fri 01 Aug 2025 08:39:31 PM CEST
     ------------------------------------------------------------
