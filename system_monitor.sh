@@ -1,83 +1,129 @@
 #!/bin/bash
 
-#====================
-#Email configurations
-#====================
-. ./config_file
-servername=$(hostname -f)
-subject="Alert from $servername"
+# =============================
+# Configurazione
+# =============================
+SERVERNAME=$(hostname -f)
+EMAIL_TO="wswaltersanti.info"
+EMAIL_FROM=""
+EMAIL_SUBJECT="⚠️ Allarme Risorse Sistema x $SERVERNAME"
+CPU_LIMIT=80
+RAM_LIMIT=80
+DISK_LIMIT=90
+STATE_FILE="/tmp/monitor_sistema_html.state"
+HIST_FILE="/tmp/monitor_sistema_storico.csv"
+GRAPH_FILE="/tmp/monitor_sistema_grafico.png"
 
-#========
-#Get data
-#========
-CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}') # Sum of user and system CPU usage
-MEMORY=$(free -m | awk 'NR==2{printf "%.2f", $3*100/$2 }') # Memory usage as a percentage
-DISK=$(df -h / | awk 'NR==2 {print $5}') # Root filesystem usage as a percentage
-UPTIME=$(uptime -p) # Human-readable uptime
-TOP_PROCESSES=$(ps -eo pid,user,comm,%mem,%cpu --sort=-%cpu | head -n 16) # Top 15 processes
-
-#======
-#Report
-#======
-#Enable/Disable log
-#If log is disabled, the log file emptied
-#and after it registers only the last transaction
-if [ $log_enable -eq 0 ]
-then
-   #Empty log file
-   cat /dev/null > $log_file
+# =============================
+# Modalità test
+# =============================
+TEST_MODE=false
+if [[ "$1" == "--test" ]]; then
+    TEST_MODE=true
 fi
 
-
-OUTPUT_FILE=$log_file
-{
-    echo "System Monitoring Report - $(date)"
-    echo "---------------------------------"
-    echo "CPU Usage: $CPU%"
-    echo "Memory Usage: $MEMORY%"
-    echo "Disk Usage: $DISK"
-    echo "Uptime: $UPTIME"
-    echo ""
-    echo "Top 15 Processes by CPU Usage:"
-    echo "$TOP_PROCESSES"
-    echo "---------------------------------"
-} >> $OUTPUT_FILE
-
-cat $OUTPUT_FILE
-
-#================
-#Data preparation
-#================
-cpu_usage_int=$(printf "%.0f" "$CPU")
-memory_usage_int=$(printf "%.0f" "$MEMORY")
-disk_usage_int=$(printf "%.0f" "$DISK")
-#echo "$disk_usage_int"
-#disk_usage_int="${disk_usage//%/}"
-
-#============
-#Email alerts
-#============
-#CPU alert
-if [ $cpu_usage_int -gt $cpu_limit ]
-then
-   msg="CPU usage is greater or equal than $CPU%"
-   echo "$msg"
-   mail -s "$msg" "$to" "$from" < $OUTPUT_FILE
+# =============================
+# Raccolta dati
+# =============================
+if $TEST_MODE; then
+    CPU_USAGE=95
+    RAM_USAGE=92
+    DISK_USAGE=97
+else
+    CPU_USAGE=$(top -bn1 | grep "Cpu(s)" | awk '{print 100 - $8}' | awk -F. '{print $1}')
+    RAM_USAGE=$(free | awk '/Mem/ {printf("%.0f"), $3/$2 * 100}')
+    DISK_USAGE=$(df / | awk 'NR==2 {print $5}' | sed 's/%//')
 fi
 
-#MEMORY alert
-if [ $memory_usage_int -gt $memory_limit ]
-then
-   msg="MEMORY usage is greater or equal than $MEMORY%"
-   echo "$msg"
-   mail -s "$subject" "$to" "$from" < $OUTPUT_FILE
+# =============================
+# Generazione storico
+# =============================
+DATE_NOW=$(date "+%Y-%m-%d %H:%M:%S")
+echo "$DATE_NOW,$CPU_USAGE,$RAM_USAGE,$DISK_USAGE" >> "$HIST_FILE"
+
+# =============================
+# Controllo stato
+# =============================
+STATUS="OK"
+if [[ $CPU_USAGE -ge $CPU_LIMIT || $RAM_USAGE -ge $RAM_LIMIT || $DISK_USAGE -ge $DISK_LIMIT ]]; then
+    STATUS="ALERT"
 fi
 
-#DISK alert
-if [ $disk_usage_int -gt $disk_limit ]
-then
-   msg="DISK usage is greater or equal than $DISK"
-   echo "$msg"
-   #echo "$msg \r\n " |
-   mail -s "$msg" "$to" "$from" < $OUTPUT_FILE
+PREV_STATUS=""
+if [[ -f "$STATE_FILE" ]]; then
+    PREV_STATUS=$(cat "$STATE_FILE")
 fi
+
+# In test mode forziamo l'invio
+if $TEST_MODE; then
+    STATUS="ALERT"
+    PREV_STATUS="OK"
+fi
+
+echo "$STATUS" > "$STATE_FILE"
+
+# =============================
+# Se stato invariato, esci
+# =============================
+if [[ "$STATUS" == "$PREV_STATUS" && $TEST_MODE == false ]]; then
+    exit 0
+fi
+
+# =============================
+# Creazione tabella HTML
+# =============================
+EMAIL_BODY="<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"
+EMAIL_BODY+="<!DOCTYPE html>"
+EMAIL_BODY+="<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\" dir=\"ltr\">"
+EMAIL_BODY+="<head>"
+EMAIL_BODY+="<meta name=\"description\" content=\"application/xhtml+xml; charset=UTF-8\" />"
+EMAIL_BODY+="</head>"
+EMAIL_BODY+="<body>"
+EMAIL_BODY+="<h2>Monitoraggio Sistema</h2>"
+EMAIL_BODY+="<table border='1' cellpadding='5' cellspacing='0'>"
+EMAIL_BODY+="<tr><th>Data</th><th>CPU %</th><th>RAM %</th><th>DISCO %</th></tr>"
+EMAIL_BODY+="<tr><td>$DATE_NOW</td><td>$CPU_USAGE</td><td>$RAM_USAGE</td><td>$DISK_USAGE</td></tr>"
+EMAIL_BODY+="</table></html>"
+EMAIL_BODY+="</body>"
+echo $EMAIL_BODY > /tmp/email_body.html
+# =============================
+# Creazione grafico
+# =============================
+gnuplot <<EOF
+set terminal png size 800,400
+set output "$GRAPH_FILE"
+set title "Storico utilizzo risorse"
+set xlabel "Tempo"
+set xdata time
+set timefmt "%Y-%m-%d %H:%M:%S"
+set format x "%H:%M"
+set ylabel "%"
+set grid
+set datafile separator ","
+plot "$HIST_FILE" using 1:2 with lines title "CPU", \
+     "$HIST_FILE" using 1:3 with lines title "RAM", \
+     "$HIST_FILE" using 1:4 with lines title "DISCO"
+EOF
+
+# =============================
+# Invio email
+# =============================
+(
+HEADER="To: $EMAIL_TO"
+HEADER+="Subject: $EMAIL_SUBJECT"
+HEADER+="MIME-Version: 1.0"
+HEADER+="Content-Type: multipart/mixed; boundary=XYZ"
+HEADER+=""
+HEADER+="--XYZ"
+HEADER+="Content-Type: text/html"
+HEADER+=""
+HEADER+="$EMAIL_BODY"
+HEADER+="--XYZ"
+HEADER+="Content-Type: image/png"
+HEADER+="Content-Transfer-Encoding: base64"
+HEADER+="Content-Disposition: attachment; filename=\"monitor_sistema_grafico.png\""
+#base64 "$GRAPH_FILE"
+HEADER+="--XYZ--"
+)
+#| echo $EMAIL_BODY |
+mutt -e "$HEADER" -s "$EMAIL_SUBJECT" $EMAIL_TO -a "$GRAPH_FILE" -a "$HIST_FILE" -e 'set content_type="text/html"' < /tmp/email_body.html
