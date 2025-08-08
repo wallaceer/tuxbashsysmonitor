@@ -4,7 +4,7 @@
 # Configurazione
 # =============================
 SERVERNAME=$(hostname -f)
-EMAIL_TO=""
+EMAIL_TO="ws@waltersanti.info"
 EMAIL_FROM=""
 EMAIL_SUBJECT="⚠️ Allarme Risorse Sistema x $SERVERNAME"
 CPU_LIMIT=80
@@ -153,4 +153,6 @@ HEADER+="Content-Disposition: attachment; filename=\"monitor_sistema_grafico.png
 HEADER+="--XYZ--"
 )
 #| echo $EMAIL_BODY |
-mutt -e "$HEADER" -s "$EMAIL_SUBJECT" $EMAIL_TO -a "$GRAPH_FILE" -a "$HIST_FILE" -a $TOP_PROCESSES_LOG -e 'set content_type="text/html"' < /tmp/email_body.html
+if [ $STATUS == "ALERT" ]; then
+  mutt -e "$HEADER" -s "$EMAIL_SUBJECT" $EMAIL_TO -a "$GRAPH_FILE" -a "$HIST_FILE" -a $TOP_PROCESSES_LOG -e 'set content_type="text/html"' < /tmp/email_body.html
+fi
