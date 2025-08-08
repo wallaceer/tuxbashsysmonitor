@@ -4,7 +4,7 @@
 # Configurazione
 # =============================
 SERVERNAME=$(hostname -f)
-EMAIL_TO="wswaltersanti.info"
+EMAIL_TO=""
 EMAIL_FROM=""
 EMAIL_SUBJECT="⚠️ Allarme Risorse Sistema x $SERVERNAME"
 CPU_LIMIT=80
@@ -13,6 +13,7 @@ DISK_LIMIT=90
 STATE_FILE="/tmp/monitor_sistema_html.state"
 HIST_FILE="/tmp/monitor_sistema_storico.csv"
 GRAPH_FILE="/tmp/monitor_sistema_grafico.png"
+TOP_PROCESSES_LOG="/tmp/top_processes.log"
 
 # =============================
 # Modalità test
@@ -35,11 +36,29 @@ else
     DISK_USAGE=$(df / | awk 'NR==2 {print $5}' | sed 's/%//')
 fi
 
+cat /dev/null > $TOP_PROCESSES_LOG
+UPTIME=$(uptime -p) # Human-readable uptime
+TOP_PROCESSES=$(ps -eo pid,user,comm,%mem,%cpu --sort=-%cpu | head -n 16 | awk 'BEGIN {
+    print "<table border=\"1\"><tr><th>PID</th><th>Utente</th><th>Comando</th><th>% Memoria</th><th>% CPU</th></tr>"
+}
+NR>1 {
+    print "<tr><td>" $1 "</td><td>" $2 "</td><td>" $3 "</td><td>" $4 "</td><td>" $5 "</td></tr>"
+}
+END {
+    print "</table>"
+}') # Top 15 processes
+{
+    echo "<p>System Monitoring Report - $(date)</p>"
+    echo "<p>Top 15 Processes by CPU Usage:</p>"
+    echo "<p>$TOP_PROCESSES</p>"
+    echo "<p>---------------------------------</p>"
+} >> $TOP_PROCESSES_LOG
+
 # =============================
 # Generazione storico
 # =============================
 DATE_NOW=$(date "+%Y-%m-%d %H:%M:%S")
-echo "$DATE_NOW,$CPU_USAGE,$RAM_USAGE,$DISK_USAGE" >> "$HIST_FILE"
+echo "$DATE_NOW,$CPU_USAGE,$RAM_USAGE,$DISK_USAGE,$UPTIME" >> "$HIST_FILE"
 
 # =============================
 # Controllo stato
@@ -83,7 +102,15 @@ EMAIL_BODY+="<h2>Monitoraggio Sistema</h2>"
 EMAIL_BODY+="<table border='1' cellpadding='5' cellspacing='0'>"
 EMAIL_BODY+="<tr><th>Data</th><th>CPU %</th><th>RAM %</th><th>DISCO %</th></tr>"
 EMAIL_BODY+="<tr><td>$DATE_NOW</td><td>$CPU_USAGE</td><td>$RAM_USAGE</td><td>$DISK_USAGE</td></tr>"
-EMAIL_BODY+="</table></html>"
+EMAIL_BODY+="</table>"
+EMAIL_BODY+="<p>&nbsp;</p>"
+EMAIL_BODY+="<table border='1' cellpadding='5' cellspacing='0'>"
+EMAIL_BODY+="<tr><th>Top 15 processi</th></tr>"
+EMAIL_BODY+="<tr><td>"
+EMAIL_BODY+=$(cat $TOP_PROCESSES_LOG)
+EMAIL_BODY+="</td></tr>"
+EMAIL_BODY+="</table>"
+EMAIL_BODY+="</html>"
 EMAIL_BODY+="</body>"
 echo $EMAIL_BODY > /tmp/email_body.html
 # =============================
@@ -126,4 +153,4 @@ HEADER+="Content-Disposition: attachment; filename=\"monitor_sistema_grafico.png
 HEADER+="--XYZ--"
 )
 #| echo $EMAIL_BODY |
-mutt -e "$HEADER" -s "$EMAIL_SUBJECT" $EMAIL_TO -a "$GRAPH_FILE" -a "$HIST_FILE" -e 'set content_type="text/html"' < /tmp/email_body.html
+mutt -e "$HEADER" -s "$EMAIL_SUBJECT" $EMAIL_TO -a "$GRAPH_FILE" -a "$HIST_FILE" -a $TOP_PROCESSES_LOG -e 'set content_type="text/html"' < /tmp/email_body.html
