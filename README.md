@@ -51,3 +51,6 @@ It's possible to configure many parameters that I specify below:
 - CPU limit value
 - RAM lmit value
 - DISK limit value
+
+It's possible to test the script with the option " --test"
+
