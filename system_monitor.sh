@@ -4,10 +4,10 @@
 # Configurazione
 # =============================
 SERVERNAME=$(hostname -f)
-EMAIL_TO="ws@waltersanti.info"
+EMAIL_TO=""
 EMAIL_FROM=""
-EMAIL_SUBJECT="⚠️ Allarme Risorse Sistema x $SERVERNAME"
-CPU_LIMIT=80
+EMAIL_SUBJECT="⚠️ Alarm for server $SERVERNAME"
+CPU_LIMIT=90
 RAM_LIMIT=80
 DISK_LIMIT=90
 STATE_FILE="/tmp/monitor_sistema_html.state"
@@ -39,7 +39,7 @@ fi
 cat /dev/null > $TOP_PROCESSES_LOG
 UPTIME=$(uptime -p) # Human-readable uptime
 TOP_PROCESSES=$(ps -eo pid,user,comm,%mem,%cpu --sort=-%cpu | head -n 16 | awk 'BEGIN {
-    print "<table border=\"1\"><tr><th>PID</th><th>Utente</th><th>Comando</th><th>% Memoria</th><th>% CPU</th></tr>"
+    print "<table border=\"1\"><tr><th>PID</th><th>User</th><th>Command</th><th>% Memory</th><th>% CPU</th></tr>"
 }
 NR>1 {
     print "<tr><td>" $1 "</td><td>" $2 "</td><td>" $3 "</td><td>" $4 "</td><td>" $5 "</td></tr>"
@@ -98,14 +98,18 @@ EMAIL_BODY+="<head>"
 EMAIL_BODY+="<meta name=\"description\" content=\"application/xhtml+xml; charset=UTF-8\" />"
 EMAIL_BODY+="</head>"
 EMAIL_BODY+="<body>"
-EMAIL_BODY+="<h2>Monitoraggio Sistema</h2>"
+EMAIL_BODY+="<h2>System Monitor</h2>"
 EMAIL_BODY+="<table border='1' cellpadding='5' cellspacing='0'>"
-EMAIL_BODY+="<tr><th>Data</th><th>CPU %</th><th>RAM %</th><th>DISCO %</th></tr>"
+EMAIL_BODY+="<tr><th>Date</th><th>CPU %</th><th>RAM %</th><th>DISK %</th></tr>"
 EMAIL_BODY+="<tr><td>$DATE_NOW</td><td>$CPU_USAGE</td><td>$RAM_USAGE</td><td>$DISK_USAGE</td></tr>"
 EMAIL_BODY+="</table>"
 EMAIL_BODY+="<p>&nbsp;</p>"
 EMAIL_BODY+="<table border='1' cellpadding='5' cellspacing='0'>"
-EMAIL_BODY+="<tr><th>Top 15 processi</th></tr>"
+EMAIL_BODY+="<tr><th>Uptime</th></tr>"
+EMAIL_BODY+="<tr><td>"
+EMAIL_BODY+=$(uptime)
+EMAIL_BODY+="</td></tr>"
+EMAIL_BODY+="<tr><th>Top 15 processes by CPU usage</th></tr>"
 EMAIL_BODY+="<tr><td>"
 EMAIL_BODY+=$(cat $TOP_PROCESSES_LOG)
 EMAIL_BODY+="</td></tr>"
