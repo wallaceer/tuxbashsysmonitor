@@ -24,6 +24,6 @@ jobs:
           SERVER_IP: ${{ secrets.SERVER_IP }}
           APP_DIR: ${{ secrets.APP_DIR }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $SERVER_USER@$SERVER_IP "
+          ssh -o StrictHostKeyChecking=no -i $USER_DIR/.ssh/id_rsa $SERVER_USER@$SERVER_IP "
           cd $APP_DIR &&
           echo \"ciao\""
