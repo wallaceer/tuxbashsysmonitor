@@ -3,7 +3,7 @@ name: Deploy Ubuntu Server Project
 on:
   push:
     branches:
-      - main  # Change to your main branch
+      - main  
 
 jobs:
   deploy:
@@ -16,7 +16,7 @@ jobs:
       - name: Add SSH private key to agent
         uses: webfactory/ssh-agent@v0.5.3
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}  # Ensure this secret contains the new private key
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}  
 
       - name: Deploy to Server
         env:
