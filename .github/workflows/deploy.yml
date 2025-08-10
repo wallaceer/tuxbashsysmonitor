@@ -26,4 +26,4 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $SERVER_USER@$SERVER_IP "
           cd $APP_DIR &&
-          echo "ciao"
+          echo \"ciao\""
