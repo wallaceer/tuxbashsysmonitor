@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         
-      - name: Add SSH private key to agent
+      - name: Set Up SSH (Add SSH private key to agent)
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}  
@@ -24,6 +24,4 @@ jobs:
           SERVER_IP: ${{ secrets.SERVER_IP }}
           APP_DIR: ${{ secrets.APP_DIR }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i /home/walter/.ssh/id_rsa $SERVER_USER@$SERVER_IP "
-          cd $APP_DIR &&
-          echo \"ciao\""
+          ssh $SERVER_USER@$SERVER_IP 'cd $APP_DIR && git pull'
