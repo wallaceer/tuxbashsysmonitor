@@ -20,4 +20,4 @@ jobs:
 
       - name: Deploy Code
         run: |
-          ssh ${{ secrets.USER }}@${{ secrets.SERVER }} 'cd ${{ DIR }} && git pull'
+          ssh ${{ secrets.USER }}@${{ secrets.SERVER }} 'cd ${{ vars.DIR }} && git pull'
