@@ -24,4 +24,4 @@ jobs:
           SERVER_IP: ${{ secrets.SERVER_IP }}
           APP_DIR: ${{ secrets.APP_DIR }}
         run: |
-          ssh $SERVER_USER@$SERVER_IP 'cd $APP_DIR && git pull'
+          ssh $SERVER_USER@$SERVER_IP
