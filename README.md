@@ -54,6 +54,6 @@ It's possible to configure many parameters that I specify below:
 
 It's possible to test the script with the option " --test"
 
-E-mail example
+## E-mail example
 ![Email example](https://github.com/wallaceer/tuxbashsysmonitor/blob/main/tuxbashsysmonitor-email-example.png "Email example")
 
