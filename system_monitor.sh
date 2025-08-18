@@ -48,10 +48,7 @@ END {
     print "</table>"
 }') # Top 15 processes
 {
-    echo "<p>System Monitoring Report - $(date)</p>"
-    echo "<p>Top 15 Processes by CPU Usage:</p>"
     echo "<p>$TOP_PROCESSES</p>"
-    echo "<p>---------------------------------</p>"
 } >> $TOP_PROCESSES_LOG
 
 # =============================
@@ -99,6 +96,7 @@ EMAIL_BODY+="<meta name=\"description\" content=\"application/xhtml+xml; charset
 EMAIL_BODY+="</head>"
 EMAIL_BODY+="<body>"
 EMAIL_BODY+="<h2>System Monitor</h2>"
+EMAIL_BODY+="<p>System Monitoring Report - $(date)</p>"
 EMAIL_BODY+="<table border='1' cellpadding='5' cellspacing='0'>"
 EMAIL_BODY+="<tr><th>Date</th><th>CPU %</th><th>RAM %</th><th>DISK %</th></tr>"
 EMAIL_BODY+="<tr><td>$DATE_NOW</td><td>$CPU_USAGE</td><td>$RAM_USAGE</td><td>$DISK_USAGE</td></tr>"
