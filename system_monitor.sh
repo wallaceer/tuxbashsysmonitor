@@ -107,7 +107,11 @@ EMAIL_BODY+="<p>&nbsp;</p>"
 EMAIL_BODY+="<table border='1' cellpadding='5' cellspacing='0'>"
 EMAIL_BODY+="<tr><th>Uptime</th></tr>"
 EMAIL_BODY+="<tr><td>"
-EMAIL_BODY+=$(uptime)
+EMAIL_BODY+=$UPTIME
+EMAIL_BODY+="</td></tr>"
+EMAIL_BODY+="<tr><th>Load average</th></tr>"
+EMAIL_BODY+="<tr><td>"
+EMAIL_BODY+=$(cat /proc/loadavg)
 EMAIL_BODY+="</td></tr>"
 EMAIL_BODY+="<tr><th>Top 15 processes by CPU usage</th></tr>"
 EMAIL_BODY+="<tr><td>"
