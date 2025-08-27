@@ -1,12 +1,11 @@
 #!/bin/bash
 
 # =============================
-# Configurazione
+# Configuration
 # =============================
 SERVERNAME=$(hostname -f)
 EMAIL_TO=""
 EMAIL_FROM=""
-EMAIL_SUBJECT="⚠️ Alarm for server $SERVERNAME"
 CPU_LIMIT=90
 RAM_LIMIT=80
 DISK_LIMIT=90
@@ -16,7 +15,7 @@ GRAPH_FILE="/tmp/monitor_sistema_grafico.png"
 TOP_PROCESSES_LOG="/tmp/top_processes.log"
 
 # =============================
-# Modalità test
+# Test mode
 # =============================
 TEST_MODE=false
 if [[ "$1" == "--test" ]]; then
@@ -24,7 +23,7 @@ if [[ "$1" == "--test" ]]; then
 fi
 
 # =============================
-# Raccolta dati
+# Dati collection
 # =============================
 if $TEST_MODE; then
     CPU_USAGE=95
@@ -52,13 +51,13 @@ END {
 } >> $TOP_PROCESSES_LOG
 
 # =============================
-# Generazione storico
+# Historical data generationn
 # =============================
 DATE_NOW=$(date "+%Y-%m-%d %H:%M:%S")
 echo "$DATE_NOW,$CPU_USAGE,$RAM_USAGE,$DISK_USAGE,$UPTIME" >> "$HIST_FILE"
 
 # =============================
-# Controllo stato
+# Status check
 # =============================
 STATUS="OK"
 if [[ $CPU_USAGE -ge $CPU_LIMIT || $RAM_USAGE -ge $RAM_LIMIT || $DISK_USAGE -ge $DISK_LIMIT ]]; then
@@ -79,15 +78,33 @@ fi
 echo "$STATUS" > "$STATE_FILE"
 
 # =============================
-# Se stato invariato, esci
+# Exit if the status is the same
 # =============================
 if [[ "$STATUS" == "$PREV_STATUS" && $TEST_MODE == false ]]; then
     exit 0
 fi
 
 # =============================
-# Creazione tabella HTML
+# Make HTML table
 # =============================
+#Color for alert field
+CPU_BCK_COLOR=RAM_BCK_COLOR=DISK_BCK_COLOR='none'
+EMAIL_SUBJECT_FIELD=''
+if [[ $CPU_USAGE -ge $CPU_LIMIT ]]; then
+    CPU_BCK_COLOR="red"
+    EMAIL_SUBJECT_FIELD+='CPU '
+fi
+
+if [[ $RAM_USAGE -ge $RAM_LIMIT ]]; then
+    RAM_BCK_COLOR="red"
+    EMAIL_SUBJECT_FIELD+='RAM '
+fi
+
+if [[ $DISK_USAGE -ge $DISK_LIMIT ]]; then
+    DISK_BCK_COLOR="red"
+    EMAIL_SUBJECT_FIELD+='DISK'
+fi
+
 EMAIL_BODY="<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"
 EMAIL_BODY+="<!DOCTYPE html>"
 EMAIL_BODY+="<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\" dir=\"ltr\">"
@@ -99,7 +116,7 @@ EMAIL_BODY+="<h2>System Monitor</h2>"
 EMAIL_BODY+="<p>System Monitoring Report - $(date)</p>"
 EMAIL_BODY+="<table border='1' cellpadding='5' cellspacing='0'>"
 EMAIL_BODY+="<tr><th>Date</th><th>CPU %</th><th>RAM %</th><th>DISK %</th></tr>"
-EMAIL_BODY+="<tr><td>$DATE_NOW</td><td>$CPU_USAGE</td><td>$RAM_USAGE</td><td>$DISK_USAGE</td></tr>"
+EMAIL_BODY+="<tr><td>$DATE_NOW</td><td style="background-color:$CPU_BCK_COLOR">$CPU_USAGE</td><td style="background-color:$RAM_BCK_COLOR">$RAM_USAGE</td><td style="background-color:$DISK_BCK_COLOR">$DISK_USAGE</td></tr>"
 EMAIL_BODY+="</table>"
 EMAIL_BODY+="<p>&nbsp;</p>"
 EMAIL_BODY+="<table border='1' cellpadding='5' cellspacing='0'>"
@@ -120,7 +137,7 @@ EMAIL_BODY+="</html>"
 EMAIL_BODY+="</body>"
 echo $EMAIL_BODY > /tmp/email_body.html
 # =============================
-# Creazione grafico
+# Make graph
 # =============================
 gnuplot <<EOF
 set terminal png size 800,400
@@ -139,8 +156,9 @@ plot "$HIST_FILE" using 1:2 with lines title "CPU", \
 EOF
 
 # =============================
-# Invio email
+# Send email
 # =============================
+EMAIL_SUBJECT="⚠️ $EMAIL_SUBJECT_FIELD alarm for server $SERVERNAME"
 (
 HEADER="To: $EMAIL_TO"
 HEADER+="Subject: $EMAIL_SUBJECT"
