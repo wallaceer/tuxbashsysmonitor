@@ -158,7 +158,7 @@ EOF
 # =============================
 # Send email
 # =============================
-EMAIL_SUBJECT="⚠️ $EMAIL_SUBJECT_FIELD alarm for server $SERVERNAME"
+EMAIL_SUBJECT="[$SERVERNAME] - ⚠️ $EMAIL_SUBJECT_FIELD alarm "
 (
 HEADER="To: $EMAIL_TO"
 HEADER+="Subject: $EMAIL_SUBJECT"
