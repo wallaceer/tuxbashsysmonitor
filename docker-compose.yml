@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  monitor:
+    build: .
+    container_name: tuxbashsysmonitor
+    volumes:
+      - ./system_monitor.conf:/app/system_monitor.conf:ro
+      - /tmp:/tmp
+    command: ["--config", "/app/system_monitor.conf"]
+    # For cron-based execution use:
+    # command: ["cron"]
+    # SMTP settings are read from system_monitor.conf. Use environment variables only
+    # if you want to temporarily override values from the config file.
+    # environment:
+    #   - SMTP_HOST=smtp.example.com
+    #   - SMTP_PORT=587
+    #   - SMTP_USER=your_smtp_user
+    #   - SMTP_PASSWORD=your_smtp_password
+    #   - EMAIL_FROM=monitor@example.com
